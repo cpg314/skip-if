@@ -1,0 +1,25 @@
+[package]
+name = "skip-if"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[workspace]
+members = [ "proc_macros" ]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+
+
+[dev-dependencies]
+anyhow = "1.0.86"
+tempfile = "3.10.1"
+tokio = { version = "1.37.0", features = ["full"] }
+tracing-subscriber = "0.3.18"
+
+[dependencies]
+anyhow = "1.0.86"
+tracing = "0.1.40"
+skip-if-macros = { path = "proc_macros" }
