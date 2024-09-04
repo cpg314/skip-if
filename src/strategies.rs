@@ -14,15 +14,6 @@ impl<O> Strategy<O> for FileExists {
         }
         exists
     }
-    fn callback(
-        &self,
-        _fn_output: &O,
-        _output: &Path,
-        _args_hash: u64,
-        _code_hash: u64,
-    ) -> anyhow::Result<()> {
-        Ok(())
-    }
 }
 
 // See https://internals.rust-lang.org/t/14187
@@ -119,13 +110,7 @@ impl<T, E> Strategy<Result<T, E>> for Markers<E> {
             output.exists()
         }
     }
-    fn callback(
-        &self,
-        result: &Result<T, E>,
-        output: &Path,
-        args_hash: u64,
-        code_hash: u64,
-    ) -> anyhow::Result<()> {
+    fn callback(&self, result: &Result<T, E>, output: &Path, args_hash: u64, code_hash: u64) {
         let write_markers = |success: bool| {
             // Write the failure or success marker
             if self.folder {
@@ -140,22 +125,25 @@ impl<T, E> Strategy<Result<T, E>> for Markers<E> {
             std::fs::write(path, self.hashes_str(args_hash, code_hash))?;
             // Delete the other marker if it exists
             let _ = std::fs::remove_file(self.marker_path(!success, output));
-            anyhow::Ok(())
+            std::io::Result::Ok(())
+        };
+        let write_markers = |success: bool| {
+            if let Err(e) = write_markers(success) {
+                warn!("Failed to write marker: {}", e);
+            }
         };
         match result {
             Ok(_) if self.success_marker => {
-                write_markers(true)?;
+                write_markers(true);
             }
             Err(e) if self.failure_marker => {
                 if (self.retriable)(e) {
                     debug!("Not writing a failure marker as the error is retriable");
                 } else {
-                    write_markers(false)?;
+                    write_markers(false);
                 }
             }
             _ => {}
         }
-
-        Ok(())
     }
 }
