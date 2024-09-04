@@ -7,6 +7,7 @@ use crate::Strategy;
 pub struct FileExists;
 
 impl<O> Strategy<O> for FileExists {
+    type E = ();
     fn skip(&self, output: &Path, _args_hash: u64, _code_hash: u64) -> bool {
         let exists = output.exists();
         if exists {
@@ -75,6 +76,7 @@ impl<E> Markers<E> {
 }
 
 impl<T, E> Strategy<Result<T, E>> for Markers<E> {
+    type E = std::io::Error;
     fn skip(&self, output: &Path, args_hash: u64, code_hash: u64) -> bool {
         let check_marker = |path: &Path| {
             if let Ok(s) = std::fs::read_to_string(path) {
@@ -110,7 +112,13 @@ impl<T, E> Strategy<Result<T, E>> for Markers<E> {
             output.exists()
         }
     }
-    fn callback(&self, result: &Result<T, E>, output: &Path, args_hash: u64, code_hash: u64) {
+    fn callback(
+        &self,
+        result: &Result<T, E>,
+        output: &Path,
+        args_hash: u64,
+        code_hash: u64,
+    ) -> Result<(), std::io::Error> {
         let write_markers = |success: bool| {
             // Write the failure or success marker
             if self.folder {
@@ -127,23 +135,19 @@ impl<T, E> Strategy<Result<T, E>> for Markers<E> {
             let _ = std::fs::remove_file(self.marker_path(!success, output));
             std::io::Result::Ok(())
         };
-        let write_markers = |success: bool| {
-            if let Err(e) = write_markers(success) {
-                warn!("Failed to write marker: {}", e);
-            }
-        };
         match result {
             Ok(_) if self.success_marker => {
-                write_markers(true);
+                write_markers(true)?;
             }
             Err(e) if self.failure_marker => {
                 if (self.retriable)(e) {
                     debug!("Not writing a failure marker as the error is retriable");
                 } else {
-                    write_markers(false);
+                    write_markers(false)?;
                 }
             }
             _ => {}
         }
+        Ok(())
     }
 }

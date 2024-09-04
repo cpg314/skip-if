@@ -89,7 +89,9 @@ pub fn skip_if(args: TokenStream, input: TokenStream) -> TokenStream {
             // Use a closure to avoid early returns
             let res: #output_type = #res;
             // Callback
-            _strategy.callback(&res, skip_if_output, _args_hash, #code_hash);
+            if let Err(e) = _strategy.callback(&res, skip_if_output, _args_hash ,#code_hash) {
+                tracing::warn!(?e, "Strategy callback failed");
+            }
             res
         }})
         .unwrap(),
