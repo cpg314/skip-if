@@ -42,7 +42,7 @@ A more advanced strategy, `skip_if::Markers`, offers the following options:
   output = "output",
   strategy = "skip_if::Markers::default()",
   // or:
-  // strategy = "skip_if::Markers::default()::folder()",
+  // strategy = "skip_if::Markers::default().folder()",
 )]
 ```
 
