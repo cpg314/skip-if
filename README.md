@@ -48,5 +48,4 @@ A more advanced strategy, `skip_if::Markers`, offers the following options:
 
 ## TODO
 
-- `async` support.
 - Allow selectively disabling code and argument hashing (they are now tied together).

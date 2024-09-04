@@ -27,7 +27,7 @@ pub fn append_ext(ext: impl AsRef<std::ffi::OsStr>, path: &Path) -> PathBuf {
 pub struct Markers<E> {
     /// Use failure markers {output}.failure to skip previously failed calls.
     pub failure_marker: bool,
-    pub retriable: Box<dyn Fn(&E) -> bool>,
+    pub retriable: Box<dyn Fn(&E) -> bool + Sync + Send>,
     /// Use success markers {output}.success to rerun when arguments or code have changed.
     /// This only makes sense with the `hashes` flag.
     pub success_marker: bool,
@@ -69,7 +69,7 @@ impl<E> Markers<E> {
         self.folder = true;
         self
     }
-    pub fn retriable(mut self, retriable: impl Fn(&E) -> bool + 'static) -> Self {
+    pub fn retriable(mut self, retriable: impl Fn(&E) -> bool + Sync + Send + 'static) -> Self {
         self.retriable = Box::new(retriable);
         self
     }
