@@ -92,7 +92,7 @@ pub fn skip_if(args: TokenStream, input: TokenStream) -> TokenStream {
             if let Err(e) = _strategy.callback(&res, skip_if_output, _args_hash ,#code_hash) {
                 tracing::warn!(?e, "Strategy callback failed");
             }
-            Ok(res?)
+            res
         }})
         .unwrap(),
     );

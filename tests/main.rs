@@ -6,7 +6,6 @@ fn retriable(e: &anyhow::Error) -> bool {
     e.to_string().contains("retry")
 }
 
-
 #[tokio::test]
 async fn async_fn() -> anyhow::Result<()> {
     tracing_subscriber::fmt::init();
@@ -28,7 +27,7 @@ fn file_exists() -> anyhow::Result<()> {
         assert!(run);
         std::fs::create_dir_all(folder)?;
         assert_eq!(skip_if_output, &folder.join(id));
-        std::fs::write(skip_if_output, id.to_string())?;
+        std::fs::write(skip_if_output, id)?;
         Ok(())
     }
     let dir = tempfile::tempdir()?;
